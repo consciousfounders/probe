@@ -65,7 +65,7 @@ export class BrowserManager {
 
   async waitForSelector(
     selector: string,
-    options?: { state?: 'attached' | 'detached' | 'visible' | 'hidden'; timeout?: number }
+    options: { state?: 'attached' | 'detached' | 'visible' | 'hidden'; timeout?: number } = {}
   ): Promise<void> {
     await this.page.waitForSelector(selector, options);
   }
