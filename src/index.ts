@@ -6,6 +6,7 @@
  */
 
 import { Command } from 'commander';
+import { registerRunCommand } from './cli/commands/index.js';
 
 const program = new Command();
 
@@ -14,19 +15,8 @@ program
   .description('AI-powered test agent for Oblique CRM')
   .version('0.1.0');
 
-// TODO: Import and register commands from cli/commands/
-
-program
-  .command('run [scenarios...]')
-  .description('Run test scenarios')
-  .option('-c, --config <path>', 'Config file path', 'probe.config.yaml')
-  .option('--headless', 'Run in headless mode')
-  .option('--headed', 'Run in headed mode (default)')
-  .action(async (scenarios, options) => {
-    console.log('TODO: Implement run command');
-    console.log('Scenarios:', scenarios);
-    console.log('Options:', options);
-  });
+// Register commands
+registerRunCommand(program);
 
 program
   .command('watch')
