@@ -1,0 +1,57 @@
+# Smoke Test Scenario for Oblique CRM
+# Tests basic navigation and core functionality
+
+name: Smoke Test
+description: Basic smoke test to verify core app functionality
+tags:
+  - smoke
+  - critical
+
+setup:
+  auth:
+    type: session
+    sessionFile: ./auth/session.json
+
+steps:
+  - name: Verify Dashboard Loads
+    goal: Navigate to the dashboard and verify it loads correctly
+    startUrl: /
+    assertions:
+      - type: url
+        value: /
+      - type: no_errors
+
+  - name: Navigate to Leads
+    goal: Click on "Leads" in the sidebar navigation
+    assertions:
+      - type: url
+        value: /leads
+      - type: element_exists
+        target: h1
+        value: Leads
+
+  - name: Navigate to Contacts
+    goal: Click on "Contacts" in the sidebar navigation
+    assertions:
+      - type: url
+        value: /contacts
+      - type: element_exists
+        target: h1
+
+  - name: Navigate to Accounts
+    goal: Click on "Accounts" in the sidebar navigation
+    assertions:
+      - type: url
+        value: /accounts
+
+  - name: Navigate to Deals
+    goal: Click on "Deals" in the sidebar navigation
+    assertions:
+      - type: url
+        value: /deals
+
+  - name: Navigate to Settings
+    goal: Click on "Settings" in the sidebar navigation
+    assertions:
+      - type: url
+        value: /settings

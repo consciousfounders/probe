@@ -1,0 +1,51 @@
+# Probe Configuration
+# AI-powered test agent for Oblique CRM
+
+# Target application
+app:
+  baseUrl: http://localhost:5173
+  name: Oblique CRM
+
+# Browser settings
+browser:
+  headless: false
+  timeout: 30000
+  slowMo: 0
+
+# AI model settings
+model:
+  provider: anthropic
+  model: claude-opus-4-5-20251101
+  maxTokens: 4096
+
+# Screenshot settings
+screenshots:
+  onError: true
+  onValidation: true
+  format: png
+  directory: ./logs/screenshots
+
+# Bug reporting
+github:
+  appRepo: consciousfounders/oblique
+  agentRepo: consciousfounders/probe
+  createIssues: true
+  labels:
+    appBug: ["bug", "probe-detected"]
+    agentBug: ["bug", "self-reported", "overnight-builder"]
+
+# Logging
+logging:
+  level: info
+  directory: ./logs
+  retainDays: 30
+
+# Agent settings
+agent:
+  maxRetries: 3
+  healingStrategies:
+    - wait_and_retry
+    - refresh_and_retry
+    - alternative_selector
+    - screenshot_analysis
+    - reset_to_known_state

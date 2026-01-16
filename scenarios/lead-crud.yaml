@@ -1,0 +1,84 @@
+# Lead CRUD Operations Test
+# Tests creating, reading, updating, and deleting leads
+
+name: Lead CRUD Operations
+description: Test complete lifecycle of lead management
+tags:
+  - leads
+  - crud
+  - core
+
+setup:
+  auth:
+    type: session
+    sessionFile: ./auth/session.json
+  preconditions:
+    - User has permission to manage leads
+
+steps:
+  - name: Navigate to Leads
+    goal: Navigate to the Leads page from the sidebar
+    startUrl: /
+    assertions:
+      - type: url
+        value: /leads
+      - type: element_exists
+        target: h1
+
+  - name: Create New Lead
+    goal: |
+      Click the "Add Lead" or "New Lead" button to open the create form.
+      Fill in the form with:
+      - First name: Probe
+      - Last name: TestLead
+      - Email: probe.test@example.com
+      - Company: Probe Testing Inc
+      Then submit the form.
+    assertions:
+      - type: toast
+        value: contains:created
+    screenshot: always
+
+  - name: Verify Lead Created
+    goal: |
+      Verify the newly created lead appears in the list.
+      Look for "Probe TestLead" or the email "probe.test@example.com".
+    assertions:
+      - type: element_exists
+        target: :text("Probe TestLead")
+
+  - name: Open Lead Detail
+    goal: Click on the lead "Probe TestLead" to open its detail view
+    assertions:
+      - type: url
+        operator: contains
+        value: /leads/
+
+  - name: Edit Lead
+    goal: |
+      Find and click the edit button or make the company field editable.
+      Change the company name to "Updated Probe Inc".
+      Save the changes.
+    assertions:
+      - type: toast
+        value: contains:updated
+
+  - name: Delete Lead
+    goal: |
+      Find and click the delete button for this lead.
+      Confirm the deletion when prompted.
+    assertions:
+      - type: toast
+        value: contains:deleted
+
+  - name: Verify Lead Deleted
+    goal: Navigate back to the leads list and verify "Probe TestLead" no longer appears
+    startUrl: /leads
+    assertions:
+      - type: element_exists
+        target: :text("Probe TestLead")
+        operator: not_equals
+
+teardown:
+  cleanup:
+    - Delete any leads with email containing "probe.test@example.com"
