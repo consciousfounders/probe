@@ -265,11 +265,12 @@ export async function runCommand(
 
   printLoadingScenarios(scenarios);
 
-  // Initialize browser
+  // Initialize browser with persistent profile for auth
   const browser = new BrowserManager({
     headless: config.browser.headless,
     timeout: config.browser.timeout,
     slowMo: config.browser.slowMo,
+    userDataDir: join(process.cwd(), 'auth', 'browser-profile'),
   });
 
   // Initialize AI client

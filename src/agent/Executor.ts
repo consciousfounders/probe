@@ -5,7 +5,7 @@
  * returning ExecutedAction with success/failure status.
  */
 
-import type { Page } from 'playwright';
+import type { Page, Locator } from 'playwright';
 import type { BrowserManager } from '../browser/BrowserManager.js';
 import type {
   PlannedAction,
@@ -16,6 +16,45 @@ import type {
 } from './types.js';
 
 const DEFAULT_WAIT_TIMEOUT = 5000;
+
+/**
+ * Parse a Playwright locator string and return a Locator object
+ * Handles: getByRole, getByText, getByPlaceholder, getByLabel, locator
+ */
+function parseLocatorString(page: Page, locatorStr: string): Locator | null {
+  // getByRole('button', { name: 'Submit' })
+  const roleMatch = locatorStr.match(/^getByRole\('([^']+)'(?:,\s*\{\s*name:\s*'([^']+)'\s*\})?\)$/);
+  if (roleMatch) {
+    const [, role, name] = roleMatch;
+    return name ? page.getByRole(role as any, { name }) : page.getByRole(role as any);
+  }
+
+  // getByText('Some text')
+  const textMatch = locatorStr.match(/^getByText\('([^']+)'\)$/);
+  if (textMatch) {
+    return page.getByText(textMatch[1]);
+  }
+
+  // getByPlaceholder('Email')
+  const placeholderMatch = locatorStr.match(/^getByPlaceholder\('([^']+)'\)$/);
+  if (placeholderMatch) {
+    return page.getByPlaceholder(placeholderMatch[1]);
+  }
+
+  // getByLabel('Email')
+  const labelMatch = locatorStr.match(/^getByLabel\('([^']+)'\)$/);
+  if (labelMatch) {
+    return page.getByLabel(labelMatch[1]);
+  }
+
+  // locator('css-selector')
+  const locatorMatch = locatorStr.match(/^locator\('(.+)'\)$/);
+  if (locatorMatch) {
+    return page.locator(locatorMatch[1]);
+  }
+
+  return null;
+}
 
 export class Executor {
   private page: Page;
@@ -113,15 +152,31 @@ export class Executor {
   }
 
   /**
+   * Get a Playwright Locator from a selector string
+   * Handles both CSS selectors and Playwright locator method strings
+   */
+  private getLocator(selector: string): Locator {
+    // Try parsing as a Playwright locator method string
+    const parsed = parseLocatorString(this.page, selector);
+    if (parsed) {
+      return parsed;
+    }
+    // Fall back to CSS selector
+    return this.page.locator(selector);
+  }
+
+  /**
    * Execute the specific action type
    */
   private async executeAction(
     action: PlannedAction,
     selector: string
   ): Promise<void> {
+    const locator = this.getLocator(selector);
+
     switch (action.type) {
       case 'click':
-        await this.page.click(selector);
+        await locator.click();
         break;
 
       case 'fill':
@@ -129,26 +184,26 @@ export class Executor {
           throw new Error('Fill action requires a value');
         }
         // Clear existing content before filling
-        await this.page.fill(selector, action.value);
+        await locator.fill(action.value);
         break;
 
       case 'select':
         if (action.value === undefined) {
           throw new Error('Select action requires a value');
         }
-        await this.page.selectOption(selector, action.value);
+        await locator.selectOption(action.value);
         break;
 
       case 'check':
-        await this.page.check(selector);
+        await locator.check();
         break;
 
       case 'uncheck':
-        await this.page.uncheck(selector);
+        await locator.uncheck();
         break;
 
       case 'hover':
-        await this.page.hover(selector);
+        await locator.hover();
         break;
 
       case 'press':
@@ -157,7 +212,7 @@ export class Executor {
         }
         // If selector provided, focus element first
         if (selector && selector !== '__keyboard__') {
-          await this.page.click(selector);
+          await locator.click();
         }
         await this.page.keyboard.press(action.value);
         break;

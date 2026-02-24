@@ -12,6 +12,7 @@ export interface BrowserConfig {
   timeout: number;
   slowMo?: number;
   viewport?: { width: number; height: number };
+  userDataDir?: string;  // For persistent browser profile
 }
 
 export class BrowserManager {
@@ -32,18 +33,28 @@ export class BrowserManager {
   }
 
   async launch(): Promise<Page> {
-    this.browser = await chromium.launch({
-      headless: this.config.headless,
-      slowMo: this.config.slowMo,
-    });
+    // Use persistent context if userDataDir is provided (preserves cookies/sessions)
+    if (this.config.userDataDir) {
+      this.context = await chromium.launchPersistentContext(this.config.userDataDir, {
+        headless: this.config.headless,
+        slowMo: this.config.slowMo,
+        viewport: this.config.viewport ?? { width: 1280, height: 720 },
+      });
+      this._page = this.context.pages()[0] || await this.context.newPage();
+    } else {
+      this.browser = await chromium.launch({
+        headless: this.config.headless,
+        slowMo: this.config.slowMo,
+      });
 
-    this.context = await this.browser.newContext({
-      viewport: this.config.viewport ?? { width: 1280, height: 720 },
-    });
+      this.context = await this.browser.newContext({
+        viewport: this.config.viewport ?? { width: 1280, height: 720 },
+      });
 
-    this._page = await this.context.newPage();
+      this._page = await this.context.newPage();
+    }
+
     this._page.setDefaultTimeout(this.config.timeout);
-
     return this._page;
   }
 

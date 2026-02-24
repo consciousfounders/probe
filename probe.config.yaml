@@ -3,7 +3,7 @@
 
 # Target application
 app:
-  baseUrl: http://localhost:5173
+  baseUrl: https://obliqueCRM.com
   name: Oblique CRM
 
 # Browser settings
